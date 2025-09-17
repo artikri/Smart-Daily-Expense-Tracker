@@ -11,7 +11,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
 import javax.inject.Inject
 
 /**
@@ -52,6 +54,14 @@ class ExpenseEntryViewModel @Inject constructor(
     fun updateNotes(notes: String) {
         _uiState.value = _uiState.value.copy(notes = notes)
     }
+
+    fun updateSelectedDate(date: LocalDate) {
+        _uiState.value = _uiState.value.copy(selectedDate = date)
+    }
+
+    fun updateReceiptImageUri(uri: String?) {
+        _uiState.value = _uiState.value.copy(receiptImageUri = uri)
+    }
     
     fun addExpense() {
         val currentState = _uiState.value
@@ -77,13 +87,15 @@ class ExpenseEntryViewModel @Inject constructor(
         
         viewModelScope.launch {
             try {
+                val created = LocalDateTime.of(currentState.selectedDate, LocalTime.now())
                 val expense = Expense(
                     title = currentState.title.trim(),
                     amount = currentState.amount.toDouble(),
                     category = currentState.category,
                     notes = currentState.notes.takeIf { it.isNotBlank() },
-                    createdAt = LocalDateTime.now(),
-                    updatedAt = LocalDateTime.now()
+                    receiptImagePath = currentState.receiptImageUri,
+                    createdAt = created,
+                    updatedAt = created
                 )
                 
                 val result = addExpenseUseCase(expense)
@@ -95,7 +107,8 @@ class ExpenseEntryViewModel @Inject constructor(
                             successMessage = "Expense added successfully!",
                             title = "",
                             amount = "",
-                            notes = ""
+                            notes = "",
+                            receiptImageUri = null
                         )
                         loadTodaySummary()
                     },
@@ -146,6 +159,8 @@ data class ExpenseEntryUiState(
     val amount: String = "",
     val category: ExpenseCategory = ExpenseCategory.FOOD,
     val notes: String = "",
+    val receiptImageUri: String? = null,
+    val selectedDate: LocalDate = LocalDate.now(),
     val isLoading: Boolean = false,
     val isSuccess: Boolean = false,
     val successMessage: String? = null,

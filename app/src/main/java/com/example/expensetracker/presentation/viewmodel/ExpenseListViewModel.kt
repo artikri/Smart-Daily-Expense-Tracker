@@ -44,14 +44,15 @@ class ExpenseListViewModel @Inject constructor(
                 )
                 
                 getExpensesUseCase.getExpensesByFilter(filter).collect { expenses ->
+                    val normalized = expenses.sortedBy { it.createdAt }.toList()
                     val groupedExpenses: Map<Any, List<Expense>> = if (currentState.groupBy == GroupBy.CATEGORY) {
-                        expenses.groupBy { it.category as Any }
+                        normalized.groupBy { it.category as Any }
                     } else {
-                        expenses.groupBy { it.createdAt.toLocalDate() as Any }
+                        normalized.groupBy { it.createdAt.toLocalDate() as Any }
                     }
                     
-                    _uiState.value = currentState.copy(
-                        expenses = expenses,
+                    _uiState.value = _uiState.value.copy(
+                        expenses = normalized,
                         groupedExpenses = groupedExpenses,
                         isLoading = false,
                         error = null

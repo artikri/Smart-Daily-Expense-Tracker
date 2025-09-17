@@ -2,6 +2,8 @@ package com.example.expensetracker.presentation.screen
 
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
@@ -12,12 +14,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import coil.compose.rememberAsyncImagePainter
 import com.example.expensetracker.domain.model.ExpenseCategory
 import com.example.expensetracker.presentation.component.*
 import com.example.expensetracker.presentation.viewmodel.ExpenseEntryViewModel
+import android.net.Uri
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 
 /**
  * Expense Entry Screen
@@ -40,6 +49,13 @@ fun ExpenseEntryScreen(
             kotlinx.coroutines.delay(3000)
             viewModel.clearSuccess()
         }
+    }
+
+    // Image picker launcher
+    val imagePicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent()
+    ) { uri: Uri? ->
+        viewModel.updateReceiptImageUri(uri?.toString())
     }
     
     Scaffold(
@@ -166,6 +182,28 @@ fun ExpenseEntryScreen(
                         isSelected = uiState.category == category,
                         onClick = { viewModel.updateCategory(category) },
                         modifier = Modifier.weight(1f)
+                    )
+                }
+            }
+
+            // Attachment button (above Notes)
+            Text(text = "Receipt (Optional)", style = MaterialTheme.typography.titleMedium)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                ElevatedButton(onClick = { imagePicker.launch("image/*") }) {
+                    Icon(Icons.Default.AttachFile, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Attach Receipt")
+                }
+                uiState.receiptImageUri?.let { uri ->
+                    Image(
+                        painter = rememberAsyncImagePainter(uri),
+                        contentDescription = null,
+                        modifier = Modifier.size(48.dp),
+                        contentScale = ContentScale.Crop
                     )
                 }
             }

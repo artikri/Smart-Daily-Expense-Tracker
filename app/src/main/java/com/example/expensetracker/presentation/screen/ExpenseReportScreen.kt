@@ -62,10 +62,60 @@ fun ExpenseReportScreen(
                 .padding(paddingValues)
         ) {
             // Period Selection
+            var showStartPicker by remember { mutableStateOf(false) }
+            var showEndPicker by remember { mutableStateOf(false) }
+            var customStart by remember { mutableStateOf(java.time.LocalDate.now().minusDays(6)) }
+            var customEnd by remember { mutableStateOf(java.time.LocalDate.now()) }
+
             PeriodSelectionChips(
                 selectedPeriod = uiState.selectedPeriod,
                 onPeriodSelected = viewModel::loadReport
             )
+
+            if (uiState.selectedPeriod == com.example.expensetracker.domain.model.ReportPeriod.CUSTOM) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(onClick = { showStartPicker = true }) { Text("Start: ${customStart}") }
+                    OutlinedButton(onClick = { showEndPicker = true }) { Text("End: ${customEnd}") }
+                    Button(onClick = { viewModel.loadCustomReport(customStart, customEnd) }) { Text("Apply") }
+                }
+            }
+
+            if (showStartPicker) {
+                DatePickerDialog(onDismissRequest = { showStartPicker = false }, confirmButton = {
+                    TextButton(onClick = {
+                        showStartPicker = false
+                    }) { Text("OK") }
+                }) {
+                    val state = rememberDatePickerState()
+                    DatePicker(state = state)
+                    LaunchedEffect(state.selectedDateMillis) {
+                        state.selectedDateMillis?.let {
+                            customStart = java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                        }
+                    }
+                }
+            }
+            if (showEndPicker) {
+                DatePickerDialog(onDismissRequest = { showEndPicker = false }, confirmButton = {
+                    TextButton(onClick = {
+                        showEndPicker = false
+                    }) { Text("OK") }
+                }) {
+                    val state = rememberDatePickerState()
+                    DatePicker(state = state)
+                    LaunchedEffect(state.selectedDateMillis) {
+                        state.selectedDateMillis?.let {
+                            customEnd = java.time.Instant.ofEpochMilli(it).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                        }
+                    }
+                }
+            }
             
             // Content
             when {
@@ -122,7 +172,7 @@ private fun PeriodSelectionChips(
             .padding(horizontal = 16.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        val periods = ReportPeriod.values().filter { it != ReportPeriod.CUSTOM }
+        val periods = listOf(ReportPeriod.TODAY, ReportPeriod.LAST_7_DAYS, ReportPeriod.CUSTOM)
         items(periods) { period ->
             FilterChip(
                 onClick = { onPeriodSelected(period) },
