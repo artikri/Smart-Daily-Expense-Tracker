@@ -29,6 +29,11 @@ class ExpenseListViewModel @Inject constructor(
     val uiState: StateFlow<ExpenseListUiState> = _uiState.asStateFlow()
     
     init {
+        // Set default to today's date
+        _uiState.value = _uiState.value.copy(
+            selectedStartDate = LocalDate.now(),
+            selectedEndDate = LocalDate.now()
+        )
         loadExpenses()
     }
     
@@ -87,10 +92,26 @@ class ExpenseListViewModel @Inject constructor(
     
     fun clearFilters() {
         _uiState.value = _uiState.value.copy(
-            selectedStartDate = null,
-            selectedEndDate = null,
+            selectedStartDate = LocalDate.now(),
+            selectedEndDate = LocalDate.now(),
             selectedCategory = null,
             groupBy = GroupBy.TIME
+        )
+        loadExpenses()
+    }
+    
+    fun setDateToToday() {
+        _uiState.value = _uiState.value.copy(
+            selectedStartDate = LocalDate.now(),
+            selectedEndDate = LocalDate.now()
+        )
+        loadExpenses()
+    }
+    
+    fun setDateRange(startDate: LocalDate, endDate: LocalDate) {
+        _uiState.value = _uiState.value.copy(
+            selectedStartDate = startDate,
+            selectedEndDate = endDate
         )
         loadExpenses()
     }

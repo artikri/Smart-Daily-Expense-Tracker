@@ -34,6 +34,7 @@ fun ExpenseListScreen(
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showFilterDialog by remember { mutableStateOf(false) }
+    var showDatePicker by remember { mutableStateOf(false) }
     
     Scaffold(
         topBar = {
@@ -108,6 +109,23 @@ fun ExpenseListScreen(
                 }
             }
             
+            // Date Filter Section
+            DateFilterSection(
+                selectedStartDate = uiState.selectedStartDate,
+                selectedEndDate = uiState.selectedEndDate,
+                onDatePickerClick = { showDatePicker = true },
+                onTodayClick = { viewModel.setDateToToday() },
+                onYesterdayClick = { 
+                    val yesterday = java.time.LocalDate.now().minusDays(1)
+                    viewModel.setDateRange(yesterday, yesterday)
+                },
+                onThisWeekClick = {
+                    val today = java.time.LocalDate.now()
+                    val startOfWeek = today.minusDays(today.dayOfWeek.value - 1L)
+                    viewModel.setDateRange(startOfWeek, today)
+                }
+            )
+            
             // Group By Toggle
             if (!uiState.isEmpty) {
                 Row(
@@ -170,6 +188,37 @@ fun ExpenseListScreen(
                     }
                 }
             }
+        }
+    }
+    
+    // Date Picker Dialog
+    if (showDatePicker) {
+        val datePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = uiState.selectedStartDate?.let { date ->
+                date.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+            } ?: System.currentTimeMillis()
+        )
+        
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val selectedDate = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.systemDefault())
+                                .toLocalDate()
+                            viewModel.setDateRange(selectedDate, selectedDate)
+                        }
+                        showDatePicker = false
+                    }
+                ) { Text("OK") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
         }
     }
     
@@ -338,4 +387,92 @@ private fun FilterDialog(
             }
         }
     )
+}
+
+@Composable
+private fun DateFilterSection(
+    selectedStartDate: java.time.LocalDate?,
+    selectedEndDate: java.time.LocalDate?,
+    onDatePickerClick: () -> Unit,
+    onTodayClick: () -> Unit,
+    onYesterdayClick: () -> Unit,
+    onThisWeekClick: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Date Filter",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onDatePickerClick,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.DateRange,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(
+                        text = if (selectedStartDate == selectedEndDate) {
+                            selectedStartDate?.format(DateTimeFormatter.ofPattern("MMM dd, yyyy")) ?: "Select Date"
+                        } else {
+                            "${selectedStartDate?.format(DateTimeFormatter.ofPattern("MMM dd"))} - ${selectedEndDate?.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))}"
+                        }
+                    )
+                }
+                
+                OutlinedButton(
+                    onClick = onTodayClick,
+                    modifier = Modifier.weight(0.5f)
+                ) {
+                    Text("Today")
+                }
+            }
+            
+            // Quick date options
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                FilterChip(
+                    onClick = onYesterdayClick,
+                    label = { Text("Yesterday") },
+                    selected = false
+                )
+                FilterChip(
+                    onClick = onThisWeekClick,
+                    label = { Text("This Week") },
+                    selected = false
+                )
+            }
+            
+            if (selectedStartDate != null && selectedEndDate != null) {
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = if (selectedStartDate == selectedEndDate) {
+                        "Showing expenses for ${selectedStartDate.format(DateTimeFormatter.ofPattern("EEEE, MMMM dd, yyyy"))}"
+                    } else {
+                        "Showing expenses from ${selectedStartDate.format(DateTimeFormatter.ofPattern("MMM dd"))} to ${selectedEndDate.format(DateTimeFormatter.ofPattern("MMM dd, yyyy"))}"
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+        }
+    }
 }
