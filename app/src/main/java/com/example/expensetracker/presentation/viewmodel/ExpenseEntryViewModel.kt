@@ -56,7 +56,10 @@ class ExpenseEntryViewModel @Inject constructor(
     }
 
     fun updateSelectedDate(date: LocalDate) {
-        _uiState.value = _uiState.value.copy(selectedDate = date)
+        _uiState.value = _uiState.value.copy(
+            selectedDate = date,
+            dateError = null
+        )
     }
 
     fun updateReceiptImageUri(uri: String?) {
@@ -65,6 +68,18 @@ class ExpenseEntryViewModel @Inject constructor(
     
     fun addExpense() {
         val currentState = _uiState.value
+        
+        // Date cannot be in future
+        val today = LocalDate.now()
+        if (currentState.selectedDate.isAfter(today)) {
+            _uiState.value = currentState.copy(
+                error = "Date cannot be in the future",
+                dateError = "Date cannot be in the future",
+                isSuccess = false,
+                successMessage = null
+            )
+            return
+        }
         
         // Validate input
         val titleError = if (currentState.title.isBlank()) "Title cannot be empty" else null
@@ -108,7 +123,8 @@ class ExpenseEntryViewModel @Inject constructor(
                             title = "",
                             amount = "",
                             notes = "",
-                            receiptImageUri = null
+                            receiptImageUri = null,
+                            dateError = null
                         )
                         loadTodaySummary()
                     },
@@ -129,7 +145,7 @@ class ExpenseEntryViewModel @Inject constructor(
     }
     
     fun clearError() {
-        _uiState.value = _uiState.value.copy(error = null)
+        _uiState.value = _uiState.value.copy(error = null, dateError = null)
     }
     
     fun clearSuccess() {
@@ -167,6 +183,7 @@ data class ExpenseEntryUiState(
     val error: String? = null,
     val titleError: String? = null,
     val amountError: String? = null,
+    val dateError: String? = null,
     val todayTotalAmount: Double = 0.0,
     val todayExpenseCount: Int = 0
 )

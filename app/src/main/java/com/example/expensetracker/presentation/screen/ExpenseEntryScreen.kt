@@ -5,12 +5,18 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.material3.DatePicker
+import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.rememberDatePickerState
+import androidx.compose.material3.SelectableDates
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -32,7 +38,7 @@ import androidx.activity.result.contract.ActivityResultContracts
  * Expense Entry Screen
  * Allows users to add new expenses with validation and real-time feedback
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ExpenseEntryScreen(
     onNavigateToList: () -> Unit,
@@ -41,6 +47,7 @@ fun ExpenseEntryScreen(
     viewModel: ExpenseEntryViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     
     // Handle success state
     LaunchedEffect(uiState.isSuccess) {
@@ -172,7 +179,7 @@ fun ExpenseEntryScreen(
                 text = "Category",
                 style = MaterialTheme.typography.titleMedium
             )
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -180,8 +187,46 @@ fun ExpenseEntryScreen(
                     CategoryChip(
                         category = category,
                         isSelected = uiState.category == category,
-                        onClick = { viewModel.updateCategory(category) },
-                        modifier = Modifier.weight(1f)
+                        onClick = { viewModel.updateCategory(category) }
+                    )
+                }
+            }
+
+            // Date selector with future dates disabled
+            var showDatePicker by remember { mutableStateOf(false) }
+            OutlinedCard(onClick = { showDatePicker = true }, modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.padding(12.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("Date", style = MaterialTheme.typography.titleMedium)
+                    Text(uiState.selectedDate.toString(), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            if (showDatePicker) {
+                val today = java.time.LocalDate.now()
+                val millis = uiState.selectedDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val state = rememberDatePickerState(initialSelectedDateMillis = millis)
+                DatePickerDialog(
+                    onDismissRequest = { showDatePicker = false },
+                    confirmButton = {
+                        TextButton(onClick = {
+                            val pickedMillis = state.selectedDateMillis
+                            if (pickedMillis != null) {
+                                val picked = java.time.Instant.ofEpochMilli(pickedMillis).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                                val clamped = if (picked.isAfter(today)) {
+                                    android.widget.Toast.makeText(context, "Future date not allowed. Using today.", android.widget.Toast.LENGTH_SHORT).show()
+                                    today
+                                } else picked
+                                viewModel.updateSelectedDate(clamped)
+                            }
+                            showDatePicker = false
+                        }) { Text("OK") }
+                    }
+                ) {
+                    DatePicker(
+                        state = state
                     )
                 }
             }

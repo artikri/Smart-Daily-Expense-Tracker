@@ -73,12 +73,11 @@ fun ExpenseReportScreen(
             )
 
             if (uiState.selectedPeriod == com.example.expensetracker.domain.model.ReportPeriod.CUSTOM) {
-                Row(
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically
                 ) {
                     OutlinedButton(onClick = { showStartPicker = true }) { Text("Start: ${customStart}") }
                     OutlinedButton(onClick = { showEndPicker = true }) { Text("End: ${customEnd}") }
@@ -116,7 +115,7 @@ fun ExpenseReportScreen(
                     }
                 }
             }
-            
+
             // Content
             when {
                 uiState.isLoading -> {
@@ -145,11 +144,11 @@ fun ExpenseReportScreen(
                             item {
                                 ReportSummaryCard(report = report)
                             }
-                            
+
                             item {
                                 CategoryBreakdownCard(report = report)
                             }
-                            
+
                             item {
                                 DailyTrendsCard(report = report)
                             }
@@ -199,34 +198,21 @@ private fun ReportSummaryCard(
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly
-            ) {
-                StatCard(
-                    title = "Total Amount",
-                    value = "₹${String.format("%.2f", report.totalAmount)}",
-                    icon = {
-                        Icon(
-                            Icons.Default.AccountBalanceWallet,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                )
-                StatCard(
-                    title = "Total Expenses",
-                    value = report.totalCount.toString(),
-                    icon = {
-                        Icon(
-                            Icons.Default.Receipt,
-                            contentDescription = null,
-                            tint = MaterialTheme.colorScheme.primary
-                        )
-                    }
-                )
-            }
+
+            // Always show amount prominently
+            AmountDisplay(amount = report.totalAmount, style = AmountDisplayStyle.LARGE)
+            Text(
+                text = "Total Amount",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Show total count as a simple line to avoid being hidden on small screens
+            Text(
+                text = "Total Expenses: ${report.totalCount}",
+                style = MaterialTheme.typography.bodyLarge
+            )
         }
     }
 }

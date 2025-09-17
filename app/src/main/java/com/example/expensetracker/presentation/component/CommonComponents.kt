@@ -139,7 +139,11 @@ fun CategoryChip(
             ) {
                 Text(category.icon)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text(category.displayName)
+                Text(
+                    text = category.displayName,
+                    maxLines = 2,
+                    softWrap = true
+                )
             }
         },
         selected = isSelected,

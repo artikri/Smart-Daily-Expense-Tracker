@@ -308,7 +308,7 @@ private fun FilterDialog(
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
                 Text("Category")
-                Row(
+                FlowRow(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     ExpenseCategory.values().forEach { category ->
