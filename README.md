@@ -149,7 +149,7 @@ This project was developed using AI assistance throughout the entire development
 ### Debug Build
 Download the latest debug APK to test the application:
 
-**[📱 Download Debug APK](app/build/outputs/apk/debug/app-debug.apk)**
+**[📱 Download Debug APK](app/debug/app-debug.apk)**
 
 > **Note**: This is a debug build for testing purposes. Enable "Install from Unknown Sources" in your Android device settings to install the APK.
 
