@@ -144,7 +144,24 @@ This project was developed using AI assistance throughout the entire development
 |------------------|--------------|
 | ![Expense Report Full](docs/Expense_report_full_screen.png) | ![Expense Report Share](docs/Expense_report_share.png) |
 
+## Download APK
+
+### Debug Build
+Download the latest debug APK to test the application:
+
+**[📱 Download Debug APK](app/build/outputs/apk/debug/app-debug.apk)**
+
+> **Note**: This is a debug build for testing purposes. Enable "Install from Unknown Sources" in your Android device settings to install the APK.
+
 ## Getting Started
+
+### Option 1: Install APK
+1. Download the debug APK from the link above
+2. Enable "Install from Unknown Sources" in Android settings
+3. Install the APK on your device
+4. Start tracking your expenses!
+
+### Option 2: Build from Source
 1. Clone the repository
 2. Open in Android Studio
 3. Sync Gradle files
