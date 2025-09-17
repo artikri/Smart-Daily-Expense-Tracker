@@ -4,7 +4,7 @@
 A modern Android expense tracking application built with Jetpack Compose, MVVM architecture, and Clean Architecture principles. The app allows users to record daily expenses, categorize spending, view detailed reports with analytics, and export data in multiple formats. Features include receipt image attachments, date-based filtering, dark/light theme support, and comprehensive expense analytics.
 
 ## AI Usage Summary
-This project was developed using AI assistance throughout the entire development lifecycle. ChatGPT was used for architectural planning, code generation, debugging, and feature implementation. The AI helped design the Clean Architecture structure, implement MVVM patterns with StateFlow, create Room database entities, build Jetpack Compose UI components, and resolve complex Android-specific issues like FileProvider implementation. AI was particularly valuable for generating boilerplate code, implementing complex UI animations, and debugging compilation errors across multiple modules.
+This project was developed using AI assistance throughout the entire development lifecycle. Cursor was used for architectural planning, code generation, debugging, and feature implementation. The AI helped design the Clean Architecture structure, implement MVVM patterns with StateFlow, create Room database entities, build Jetpack Compose UI components, and resolve complex Android-specific issues like FileProvider implementation. AI was particularly valuable for generating boilerplate code, implementing complex UI animations, and debugging compilation errors across multiple modules.
 
 ## Prompt Logs
 
