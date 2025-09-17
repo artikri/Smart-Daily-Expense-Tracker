@@ -12,6 +12,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -32,6 +33,7 @@ fun ExpenseReportScreen(
     viewModel: ExpenseReportViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+    val context = LocalContext.current
     
     Scaffold(
         topBar = {
@@ -114,6 +116,20 @@ fun ExpenseReportScreen(
                         }
                     }
                 }
+            }
+
+            // Export buttons - only show when report is available
+            if (uiState.report != null && !uiState.isLoading) {
+                ExportButtons(
+                    onExportCsv = {
+                        val shareIntent = viewModel.exportAsCsv(context)
+                        shareIntent?.let { context.startActivity(it) }
+                    },
+                    onExportPdf = {
+                        val shareIntent = viewModel.exportAsPdf(context)
+                        shareIntent?.let { context.startActivity(it) }
+                    }
+                )
             }
 
             // Content
@@ -344,5 +360,66 @@ private fun DailyTrendItem(
             modifier = Modifier.fillMaxWidth(),
             color = MaterialTheme.colorScheme.primary
         )
+    }
+}
+
+@Composable
+private fun ExportButtons(
+    onExportCsv: () -> Unit,
+    onExportPdf: () -> Unit
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Text(
+                text = "Export Report",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold
+            )
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                OutlinedButton(
+                    onClick = onExportCsv,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.TableChart,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Export CSV")
+                }
+                
+                OutlinedButton(
+                    onClick = onExportPdf,
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Icon(
+                        Icons.Default.PictureAsPdf,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp)
+                    )
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Export PDF")
+                }
+            }
+            
+            Text(
+                text = "Files will be shared via your preferred app",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 8.dp)
+            )
+        }
     }
 }

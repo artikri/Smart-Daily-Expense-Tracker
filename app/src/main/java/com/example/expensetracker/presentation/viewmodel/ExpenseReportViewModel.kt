@@ -1,10 +1,14 @@
 package com.example.expensetracker.presentation.viewmodel
 
+import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.expensetracker.domain.model.ExpenseReport
 import com.example.expensetracker.domain.model.ReportPeriod
 import com.example.expensetracker.domain.usecase.GetExpenseReportUseCase
+import com.example.expensetracker.presentation.utils.ExportUtils
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -88,6 +92,36 @@ class ExpenseReportViewModel @Inject constructor(
     
     fun clearError() {
         _uiState.value = _uiState.value.copy(error = null)
+    }
+    
+    /**
+     * Export report as CSV and trigger share intent
+     */
+    fun exportAsCsv(context: Context): Intent? {
+        val currentReport = _uiState.value.report
+        val currentPeriod = _uiState.value.selectedPeriod
+        
+        return if (currentReport != null) {
+            val uri = ExportUtils.exportAsCsv(context, currentReport, currentPeriod)
+            uri?.let { ExportUtils.createShareIntent(context, it, "text/csv") }
+        } else {
+            null
+        }
+    }
+    
+    /**
+     * Export report as PDF (simulated) and trigger share intent
+     */
+    fun exportAsPdf(context: Context): Intent? {
+        val currentReport = _uiState.value.report
+        val currentPeriod = _uiState.value.selectedPeriod
+        
+        return if (currentReport != null) {
+            val uri = ExportUtils.exportAsPdf(context, currentReport, currentPeriod)
+            uri?.let { ExportUtils.createShareIntent(context, it, "text/plain") }
+        } else {
+            null
+        }
     }
 }
 
