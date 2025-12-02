@@ -1,6 +1,7 @@
 package com.example.expensetracker
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
@@ -17,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.compose.rememberNavController
 import com.example.expensetracker.navigation.ExpenseTrackerNavigation
+import com.example.expensetracker.presentation.services.MediaPlayerService
 import com.example.expensetracker.presentation.viewmodel.ThemeViewModel
 import com.example.expensetracker.ui.theme.ExpenseTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -27,6 +29,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         askNotificationPermission()
+        val intent = Intent(this, MediaPlayerService::class.java)
+        startService(intent)
         setContent {
             val themeViewModel: ThemeViewModel = hiltViewModel()
             val isDarkTheme by themeViewModel.isDarkTheme.collectAsState()

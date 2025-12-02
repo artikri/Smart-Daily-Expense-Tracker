@@ -1,12 +1,14 @@
 package com.example.expensetracker.domain.model
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import java.time.LocalDateTime
 
 /**
  * Domain model for Expense entity
  * Represents a business expense with all necessary information
  */
-data class Expense(
+data class Expense @RequiresApi(Build.VERSION_CODES.O) constructor(
     val id: Long = 0,
     val title: String,
     val amount: Double,
